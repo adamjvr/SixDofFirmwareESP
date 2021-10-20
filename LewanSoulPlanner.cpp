@@ -88,76 +88,6 @@ void LewanSoulPlanner::update(){
 void LewanSoulPlanner::loop(){
 
 	switch(state){
-	case provisioning:
-		while(Serial.available()){
-			command[commandIndex]=Serial.read();
-			Serial.print(command[commandIndex]);
-			if(command[commandIndex]=='\r'|| command[commandIndex]=='\n'||command[commandIndex]==10|| command[commandIndex]==13){
-				state=runProvision;
-			}
-			commandIndex++;
-		}
-		if(millis()-startProvisioning>5000){
-			//
-			state=runProvision;
-		}
-		break;
-	case runProvision:
-		if((command[0]=='I'||command[0]=='i') && (command[1]=='D'||command[1]=='d')){
-			if( command[2]==' '){
-				if(commandIndex==5){
-					IDToSet=command[3]-0x30;
-				}
-				if(commandIndex==6){
-					IDToSet=(command[4]-0x30)+(10*(command[3]-0x30));
-				}
-				if(commandIndex==7){
-					IDToSet=(command[5]-0x30)+(10*(command[4]-0x30))+(100*(command[3]-0x30));
-				}
-				Serial.print("\r\nGOT as hex:[ ");
-				for(int i=0;i<commandIndex;i++){
-					Serial.print((i!=0?" 0x":", 0x")+String(command[i], HEX));
-				}
-				Serial.print("]\r\n");
-				Serial.print("\r\nGOT as ASCII:[ ");
-				for(int i=0;i<commandIndex;i++){
-					if (i!=0)Serial.print(", ");
-					Serial.print(command[i]);
-				}
-				Serial.print("]\r\n");
-				Serial.println("\r\nProcessing ID "+String(IDToSet));
-				int read = servoBus.id_read();
-				Serial.println("\r\nCurrent ID was "+String(read));
-				int timeout =0;
-				do{
-					servoBus.setRetryCount(5);
-					servoBus.debug(true);
-					servoBus.id_write(IDToSet);
-					read=servoBus.id_read();
-					servoBus.debug(false);
-					if(read!=IDToSet || read==0){
-						Serial.println("\r\nERROR ID set failed");
-						delay(500);
-					}else{
-						Serial.println("\r\nCurrent ID is now "+String(read));
-					}
-					timeout++;
-				}while(( read!=IDToSet) && timeout<10);
-			}else{
-				int read = servoBus.id_read();
-				if(read!=0)
-					Serial.println("\r\nCurrent ID "+String(read));
-				else
-					Serial.println("\r\nFAULT motor not responding ");
-			}
-
-		}else{
-			Serial.println("\r\nProvision timeout! Format:\n\r\nID 2<NL> \n\r\n will set the one connected motor ID to 2\n\r\nwhere <NL> is the new line char" );
-		}
-		commandIndex=0;
-		IDToSet=0;
-		state=WaitForHomePress;
-		break;
 	case StartupSerial:
 
 		servoBus.beginOnePinMode(&Serial1,14); // use pin 2 as the TX flag for buffer
@@ -174,10 +104,7 @@ void LewanSoulPlanner::loop(){
 		break;
 	case WaitForHomePress:
 		read();
-		if(Serial.available()){
-			state=provisioning;
-			startProvisioning=millis();
-		}
+
 		if(!digitalRead(HOME_SWITCH_PIN)){
 			timeOfHomingPressed = millis();
 			state = WaitForHomeRelease;

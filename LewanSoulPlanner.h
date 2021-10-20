@@ -14,7 +14,7 @@
 #define MOTOR_DISABLE 12
 #define plannerLoopTimeMs 15
 enum LewanSoulState_t {
-	StartupSerial, WaitForHomePress,WaitForHomeRelease,WaitingForCalibrationToFinish,WaitingToRun,running,disabled,provisioning,runProvision
+	StartupSerial, WaitForHomePress,WaitForHomeRelease,WaitingForCalibrationToFinish,WaitingToRun,running,disabled
 // Add more states here and be sure to add them to the cycle
 };
 class LewanSoulPlanner {
