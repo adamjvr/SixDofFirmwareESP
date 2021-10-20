@@ -37,7 +37,7 @@ bool LewanSoulPlanner::calibrate(){
 			return false;
 		}
 		int32_t pos = startingAngles[i]-motors[i]->pos_read();
-		if(pos!=0){
+		if(abs(pos)>24){
 			Serial.println("Settling Error of"+String(pos)+", re-calibrating on index "+String(motors[i]->_id));
 			return false;
 		}
