@@ -7,17 +7,17 @@
 
 #ifndef SRC_PID_LEWANSOULPLANNER_H_
 #define SRC_PID_LEWANSOULPLANNER_H_
-#include "../pid/PIDMotor.h"
-#include "../pid/SerialMotor.h"
+
 #include <lx16a-servo.h>
-#include "../../config.h"
+#define HOME_SWITCH_PIN 0
+#define INDICATOR 13
+#define MOTOR_DISABLE 12
 #define plannerLoopTimeMs 15
 enum LewanSoulState_t {
 	StartupSerial, WaitForHomePress,WaitForHomeRelease,WaitingForCalibrationToFinish,WaitingToRun,running,disabled,provisioning,runProvision
 // Add more states here and be sure to add them to the cycle
 };
 class LewanSoulPlanner {
-	SerialMotor ** upstream;
 	LX16ABus servoBus;
 	LX16AServo ** motors;
 	int num=0;
@@ -27,12 +27,14 @@ class LewanSoulPlanner {
 	bool blinkState = false;
 	long timeOfLastBlink = 0;
 public:
-	LewanSoulPlanner( int num, SerialMotor ** list);
+	LewanSoulPlanner( int num);
 	~LewanSoulPlanner();
 	void loop();
 	void update();
 	void read();
 	bool calibrate();
+	int targets[10]={0,};
+	int positions[10]={0,};
 };
 
 #endif /* SRC_PID_LEWANSOULPLANNER_H_ */

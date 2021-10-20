@@ -21,12 +21,11 @@ int IDToSet =0;
 //FlashStorage(cal3, float);
 //FlashStorage(lock, int);
 
-LewanSoulPlanner::LewanSoulPlanner(int n, SerialMotor ** list) {
+LewanSoulPlanner::LewanSoulPlanner(int n) {
 	num=n;
 	motors=new LX16AServo*[num];
 	for(int i=0;i<num;i++)
 		motors[i]= new LX16AServo(&servoBus, i+1);
-	upstream=list;
 
 }
 
@@ -52,9 +51,9 @@ bool LewanSoulPlanner::calibrate(){
 	read();
 	Serial.println("\r\nStarting the motor motion after calibration");
 	for(int i=0;i<num;i++){
-		upstream[i]->setSetpoint(motors[i]->pos_read());// quick set to current
 		//upstream[i]->startInterpolationDegrees(startingAngles[i],2000,SIN);
 		//motors[i]->move_time_and_wait_for_sync(startingAngles[i], 2000);
+		targets[i]=motors[i]->pos_read();
 	}
 	//servoBus.move_sync_start();
 	return true;
@@ -62,7 +61,7 @@ bool LewanSoulPlanner::calibrate(){
 void LewanSoulPlanner::read(){
 	for(int i=0;i<num;i++){
 		int32_t pos = motors[i]->pos_read();
-		upstream[i]->setCachedPosition(pos);
+		positions[i]=pos;
 	}
 }
 
@@ -71,16 +70,16 @@ void LewanSoulPlanner::update(){
 	servoBus.move_sync_start();
 	read();
 	for(int i=0;i<num;i++){
-		int32_t target = upstream[i]->getSetPoint();
+		int32_t target = targets[i];
 		if(target>motors[i]->getMaxCentDegrees()){
 			Serial.println("Capping upper setpoint "+String(target)+" to "+String(motors[i]->getMaxCentDegrees()));
 			target=motors[i]->getMaxCentDegrees();
-			upstream[i]->setSetpoint(target);
-		}
+			targets[i]=target;
+			targets[i]=target;		}
 		if(target<motors[i]->getMinCentDegrees()){
 			Serial.println("Capping lower setpoint "+String(target)+" to "+String(motors[i]->getMinCentDegrees()));
 			target=motors[i]->getMinCentDegrees();
-			upstream[i]->setSetpoint(target);
+			targets[i]=target;
 		}
 		int timingOffset = millis()-start;
 		motors[i]->move_time_and_wait_for_sync(target, plannerLoopTimeMs+timingOffset+2);
@@ -161,9 +160,7 @@ void LewanSoulPlanner::loop(){
 		break;
 	case StartupSerial:
 
-		servoBus.begin(LEWAN_SERIAL_PORT,
-				TX_LEWAN_SOUL, // on TX pin 1
-				LEWAN_TX_ENABLE_PIN); // use pin 2 as the TX flag for buffer
+		servoBus.beginOnePinMode(&Serial1,14); // use pin 2 as the TX flag for buffer
 		servoBus.debug(true);
 		servoBus.retry = 0; // enforce synchronous real time
 		//servoBus.debug(true);
@@ -223,10 +220,10 @@ void LewanSoulPlanner::loop(){
 			//still on the homing switch
 			break;
 		}
-		for(int i=0;i<num;i++){
-			if(!upstream[i]->isInterpolationDone())
-				break;// not done yet
-		}
+//		for(int i=0;i<num;i++){
+//			if(!upstream[i]->isInterpolationDone())
+//				break;// not done yet
+//		}
 		Serial.println("\r\nStarting the planner");
 		state=running;
 		digitalWrite(INDICATOR, 1);

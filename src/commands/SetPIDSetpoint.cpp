@@ -7,10 +7,10 @@
 
 #include "SetPIDSetpoint.h"
 #include <Arduino.h>
-SetPIDSetpoint::SetPIDSetpoint(int num, PIDMotor ** list) :
+SetPIDSetpoint::SetPIDSetpoint(int num, LewanSoulPlanner * planner) :
 		PacketEventAbstract(1848) {
 	numPID = num;
-	pidlist = list;
+	this->planner = planner;
 
 }
 

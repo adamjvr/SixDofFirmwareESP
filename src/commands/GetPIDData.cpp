@@ -11,10 +11,10 @@ GetPIDData::~GetPIDData() {
 	// TODO Auto-generated destructor stub
 }
 
-GetPIDData::GetPIDData(int num, PIDMotor ** list) :
+GetPIDData::GetPIDData(int num, LewanSoulPlanner * planner) :
 		PacketEventAbstract(1910) {
 	numPID = num;
-	pidlist = list;
+	this->planner = planner;
 
 }
 

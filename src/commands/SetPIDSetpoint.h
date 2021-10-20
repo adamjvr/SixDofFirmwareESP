@@ -8,12 +8,13 @@
 #ifndef SRC_COMMANDS_SETPIDSETPOINT_H_
 #define SRC_COMMANDS_SETPIDSETPOINT_H_
 #include <SimplePacketComs.h>
-#include "../pid/PIDMotor.h"
+#include "../../LewanSoulPlanner.h"
+
 class SetPIDSetpoint: public PacketEventAbstract {
-	PIDMotor ** pidlist;
+	LewanSoulPlanner * planner;
 	int numPID;
 public:
-	SetPIDSetpoint(int num, PIDMotor ** list);
+	SetPIDSetpoint(int num, LewanSoulPlanner * list);
 	virtual ~SetPIDSetpoint(){}
 	void event(float * buffer);
 };

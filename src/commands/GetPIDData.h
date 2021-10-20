@@ -8,13 +8,13 @@
 #ifndef SRC_COMS_GETPIDDATA_H_
 #define SRC_COMS_GETPIDDATA_H_
 #include <SimplePacketComs.h>
-#include "../pid/PIDMotor.h"
+#include "../../LewanSoulPlanner.h"
 class GetPIDData: public PacketEventAbstract {
 private:
-	PIDMotor ** pidlist;
+	LewanSoulPlanner * planner;
 	int numPID;
 public:
-	GetPIDData(int num, PIDMotor ** list);
+	GetPIDData(int num, LewanSoulPlanner * planner);
 	virtual ~GetPIDData();
 	void event(float * buffer);
 };
