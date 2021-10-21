@@ -22,7 +22,6 @@ LewanSoulPlanner::LewanSoulPlanner(int n) {
 	motors=new LX16AServo*[num];
 	for(int i=0;i<num;i++)
 		motors[i]= new LX16AServo(&servoBus, i+1);
-
 }
 
 LewanSoulPlanner::~LewanSoulPlanner() {
@@ -71,7 +70,6 @@ void LewanSoulPlanner::update(){
 			Serial.println("Capping upper setpoint "+String(target)+" to "+String(motors[i]->getMaxCentDegrees()));
 			target=motors[i]->getMaxCentDegrees();
 			targets[i]=target;
-			targets[i]=target;
 		}
 		if(target<motors[i]->getMinCentDegrees()){
 			Serial.println("Capping lower setpoint "+String(target)+" to "+String(motors[i]->getMinCentDegrees()));
@@ -88,9 +86,10 @@ void LewanSoulPlanner::loop(){
 	case StartupSerial:
 
 		servoBus.beginOnePinMode(&Serial1,14); // use pin 2 as the TX flag for buffer
-		servoBus.debug(true);
+		servoBus.debug(false);
 		servoBus.retry = 0; // enforce synchronous real time
-		//servoBus.debug(true);
+
+
 		Serial.println("\r\nBeginning Trajectory Planner");
 		pinMode(HOME_SWITCH_PIN, INPUT_PULLUP);
 		pinMode(MOTOR_DISABLE, INPUT_PULLUP);
@@ -149,15 +148,22 @@ void LewanSoulPlanner::loop(){
 //				break;// not done yet
 //		}
 		Serial.println("\r\nStarting the planner");
+		servoBus.debug(true);
 		state=running;
 		digitalWrite(INDICATOR, 1);
 		break;
 	case WaitingToRun:
-		if(millis()-timeOfLastRun>plannerLoopTimeMs){
+		if(millis()-timeOfLastRun==plannerLoopTimeMs){
 			state=running;
 			timeOfLastRun=millis();
-		}
-		break;
+			Serial.print("`");
+		}else if(millis()-timeOfLastRun>plannerLoopTimeMs){
+			Serial.println("ERROR Real time loop broken, took: "+String((millis()-timeOfLastRun)));
+			state=running;
+			timeOfLastRun=millis();
+		}else
+			break;
+		//no break
 	case running:
 		if(digitalRead(MOTOR_DISABLE)){
 			update();

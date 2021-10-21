@@ -15,7 +15,7 @@ SetPIDSetpoint::SetPIDSetpoint(int num, LewanSoulPlanner * planner) :
 }
 
 void SetPIDSetpoint::event(float * buffer) {
-//	Serial.print("\nGot setpoint command [");
+	//Serial.print("\nGot setpoint command [");
 	for (int i = 0; i < numPID; i++) {
 		planner->targets[i]=buffer[i+2];
 //		Serial.print(String(planner->targets[i]));

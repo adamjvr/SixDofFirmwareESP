@@ -12,7 +12,7 @@
 #define HOME_SWITCH_PIN 0
 #define INDICATOR 13
 #define MOTOR_DISABLE 12
-#define plannerLoopTimeMs 15
+#define plannerLoopTimeMs 30
 enum LewanSoulState_t {
 	StartupSerial, WaitForHomePress,WaitForHomeRelease,WaitingForCalibrationToFinish,WaitingToRun,running,disabled
 // Add more states here and be sure to add them to the cycle
