@@ -148,7 +148,7 @@ void LewanSoulPlanner::loop(){
 //				break;// not done yet
 //		}
 		Serial.println("\r\nStarting the planner");
-		servoBus.debug(true);
+		//servoBus.debug(true);
 		state=running;
 		digitalWrite(INDICATOR, 1);
 		break;
@@ -156,9 +156,9 @@ void LewanSoulPlanner::loop(){
 		if(millis()-timeOfLastRun==plannerLoopTimeMs){
 			state=running;
 			timeOfLastRun=millis();
-			Serial.print("`");
+			//Serial.print("`");
 		}else if(millis()-timeOfLastRun>plannerLoopTimeMs){
-			Serial.println("ERROR Real time loop broken, took: "+String((millis()-timeOfLastRun)));
+			Serial.println("\t\tERROR Real time loop broken, took: "+String((millis()-timeOfLastRun)));
 			state=running;
 			timeOfLastRun=millis();
 		}else
@@ -177,13 +177,13 @@ void LewanSoulPlanner::loop(){
 		break;
 	case disabled:
 		read();
-		Serial.print("\n[ ");
-		for(int i=0;i<num;i++){
-			Serial.print(String(positions[i]));
-			if(i!=num-1)
-				Serial.print(" , ");
-		}
-		Serial.print(" ] ");
+//		Serial.print("\n[ ");
+//		for(int i=0;i<num;i++){
+//			Serial.print(String(positions[i]));
+//			if(i!=num-1)
+//				Serial.print(" , ");
+//		}
+//		Serial.print(" ] ");
 		if(digitalRead(MOTOR_DISABLE)){
 			state=running;
 			Serial.println("\r\nEnable Motors");
