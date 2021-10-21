@@ -11,10 +11,10 @@
 #include "../../LewanSoulPlanner.h"
 
 class SetPIDSetpoint: public PacketEventAbstract {
-	LewanSoulPlanner * planner;
+	LewanSoulPlanner * planner;LewanSoulPlanner * planner2;
 	int numPID;
 public:
-	SetPIDSetpoint(int num, LewanSoulPlanner * list);
+	SetPIDSetpoint(int num, LewanSoulPlanner * planner1, LewanSoulPlanner * planner2);
 	virtual ~SetPIDSetpoint(){}
 	void event(float * buffer);
 };

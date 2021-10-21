@@ -10,28 +10,42 @@
 //Create a wifi manager
 static WifiManager manager;
 static UDPSimplePacket coms;
-static LewanSoulPlanner * planner=NULL;
+static LewanSoulPlanner * planner1=NULL;
+static LewanSoulPlanner * planner2=NULL;
 static String name ="GroguArm";
 static TaskHandle_t complexHandlerTaskUS;
-void MotorThread(void * param){
+void MotorThread0(void * param){
 	Serial.println("Starting the Motor loop thread");
 
 	while (1) {
 		vTaskDelay(1); //sleep 10ms
-		if(planner!=NULL)
-			planner->loop();
+		if(planner2!=NULL)
+			planner2->loop();
+	}
+	Serial.println("ERROR Motor thread died!");
+}
+void MotorThread1(void * param){
+	Serial.println("Starting the Motor loop thread");
+
+	while (1) {
+		vTaskDelay(1); //sleep 10ms
+		if(planner1!=NULL)
+			planner1->loop();
 	}
 	Serial.println("ERROR Motor thread died!");
 }
 
 void setup() {
-	planner =  new LewanSoulPlanner(7);
+	planner1 =  new LewanSoulPlanner(7,0);
+	planner2 =  new LewanSoulPlanner(7,1);
 	manager.setup();
-	coms.attach(new SetPIDSetpoint(7,planner));
-	coms.attach(new GetPIDData(7,planner));
+	coms.attach(new SetPIDSetpoint(7,planner1,planner2));
+	coms.attach(new GetPIDData(7,planner1,planner2));
 	coms.attach(new NameCheckerServer(&name));
-	xTaskCreatePinnedToCore(MotorThread, "Motor Thread", 8192, NULL, 1, // low priority timout thread
+	xTaskCreatePinnedToCore(MotorThread0, "Motor Thread 0", 8192, NULL, 1, // low priority timout thread
 					&complexHandlerTaskUS, 1);
+	xTaskCreatePinnedToCore(MotorThread1, "Motor Thread 1", 8192, NULL, 1, // low priority timout thread
+						&complexHandlerTaskUS, 1);
 }
 
 void loop() {

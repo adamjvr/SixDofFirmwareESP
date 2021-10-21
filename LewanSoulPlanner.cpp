@@ -17,20 +17,23 @@ int32_t lowerAngles []= {-9000, -9000, -9000, -11000, -5000, -11000, -11000};
 //FlashStorage(cal3, float);
 //FlashStorage(lock, int);
 
-LewanSoulPlanner::LewanSoulPlanner(int n) {
-	num=n;
-	motors=new LX16AServo*[num];
-	for(int i=0;i<num;i++)
+LewanSoulPlanner::LewanSoulPlanner(int n,int channel) {
+	this->channel=channel;
+	numberOfServos=n;
+	int startIndex=channel==0?0:indexSplit;
+	int endIndex=channel==0?indexSplit:numberOfServos;
+	motors=new LX16AServo*[numberOfServos];
+	for(int i=startIndex;i<endIndex;i++)
 		motors[i]= new LX16AServo(&servoBus, i+1);
 }
 
 LewanSoulPlanner::~LewanSoulPlanner() {
-		for(int i=0;i<num;i++)
+		for(int i=0;i<numberOfServos;i++)
 			delete(motors[i]);
 		delete(motors);
 }
-bool LewanSoulPlanner::calibrate(){
-	for(int i=0;i<num;i++){
+bool LewanSoulPlanner::calibrate(int startIndex,int endIndex){
+	for(int i=startIndex;i<endIndex;i++){
 		Serial.println("Attempt Calibrating "+String(motors[i]->_id)+"...");
 		if(!motors[i]->calibrate(startingAngles[i],lowerAngles[i],upperAngles[i])){
 			return false;
@@ -43,9 +46,9 @@ bool LewanSoulPlanner::calibrate(){
 		Serial.println("Done Calibrating "+String(motors[i]->_id)+" OK!\r\n");
 	}
 	delay(1000);
-	read();
+	read( startIndex,endIndex);
 	Serial.println("\r\nStarting the motor motion after calibration");
-	for(int i=0;i<num;i++){
+	for(int i=startIndex;i<endIndex;i++){
 		//upstream[i]->startInterpolationDegrees(startingAngles[i],2000,SIN);
 		//motors[i]->move_time_and_wait_for_sync(startingAngles[i], 2000);
 		targets[i]=positions[i];
@@ -53,18 +56,18 @@ bool LewanSoulPlanner::calibrate(){
 	//servoBus.move_sync_start();
 	return true;
 }
-void LewanSoulPlanner::read(){
-	for(int i=0;i<num;i++){
+void LewanSoulPlanner::read(int startIndex,int endIndex){
+	for(int i=startIndex;i<endIndex;i++){
 		int32_t pos = motors[i]->pos_read();
 		positions[i]=pos;
 	}
 }
 
-void LewanSoulPlanner::update(){
+void LewanSoulPlanner::update(int startIndex,int endIndex){
 	long start = millis();
 	servoBus.move_sync_start();
-	read();
-	for(int i=0;i<num;i++){
+	read(startIndex, endIndex);
+	for(int i=startIndex;i<endIndex;i++){
 		int32_t target = targets[i];
 		if(target>motors[i]->getMaxCentDegrees()){
 			Serial.println("Capping upper setpoint "+String(target)+" to "+String(motors[i]->getMaxCentDegrees()));
@@ -81,11 +84,15 @@ void LewanSoulPlanner::update(){
 	}
 }
 void LewanSoulPlanner::loop(){
+	int startIndex=channel==0?0:indexSplit;
+	int endIndex=channel==0?indexSplit:numberOfServos;
 
 	switch(state){
 	case StartupSerial:
-
-		servoBus.beginOnePinMode(&Serial1,14); // use pin 2 as the TX flag for buffer
+		if(channel==0)
+			servoBus.beginOnePinMode(&Serial1,14); //
+		else
+			servoBus.beginOnePinMode(&Serial2,27); //
 		servoBus.debug(false);
 		servoBus.retry = 0; // enforce synchronous real time
 
@@ -93,13 +100,13 @@ void LewanSoulPlanner::loop(){
 		Serial.println("\r\nBeginning Trajectory Planner");
 		pinMode(HOME_SWITCH_PIN, INPUT_PULLUP);
 		pinMode(MOTOR_DISABLE, INPUT_PULLUP);
-		for(int i=0;i<num;i++)
+		for(int i=startIndex;i<endIndex;i++)
 				motors[i]->disable();
 		state=WaitForHomePress;
 		pinMode(INDICATOR, OUTPUT);
 		break;
 	case WaitForHomePress:
-		read();
+		read( startIndex, endIndex);
 
 		if(!digitalRead(HOME_SWITCH_PIN)){
 			timeOfHomingPressed = millis();
@@ -116,7 +123,7 @@ void LewanSoulPlanner::loop(){
 		}
 		break;
 	case WaitForHomeRelease:
-		read();
+		read( startIndex, endIndex);
 		if(millis()-timeOfLastBlink>200){
 			timeOfLastBlink=millis();
 			blinkState=!blinkState;
@@ -125,7 +132,7 @@ void LewanSoulPlanner::loop(){
 		if(millis()-timeOfHomingPressed>300 && !digitalRead(HOME_SWITCH_PIN)){// wait for motors to settle, debounce
 			timeOfHomingPressed = millis();
 			digitalWrite(INDICATOR, 0);
-			if(calibrate()){
+			if(calibrate( startIndex, endIndex)){
 				state =WaitingForCalibrationToFinish;
 			}else{
 				Serial.println("\r\nCal Error");
@@ -133,7 +140,7 @@ void LewanSoulPlanner::loop(){
 		}
 		break;
 	case WaitingForCalibrationToFinish:
-		read();
+		read(startIndex, endIndex);
 		if(millis()-timeOfLastBlink>50){
 			timeOfLastBlink=millis();
 			blinkState=!blinkState;
@@ -166,17 +173,17 @@ void LewanSoulPlanner::loop(){
 		//no break
 	case running:
 		if(digitalRead(MOTOR_DISABLE)){
-			update();
+			update( startIndex, endIndex);
 			state=WaitingToRun;
 		}else{
-			for(int i=0;i<num;i++)
+			for(int i=startIndex;i<endIndex;i++)
 				motors[i]->disable();
 			state=disabled;
 			Serial.println("\r\nDisable Motors");
 		}
 		break;
 	case disabled:
-		read();
+		read(startIndex, endIndex);
 //		Serial.print("\n[ ");
 //		for(int i=0;i<num;i++){
 //			Serial.print(String(positions[i]));

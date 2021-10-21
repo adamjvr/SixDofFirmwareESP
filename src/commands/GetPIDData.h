@@ -11,10 +11,10 @@
 #include "../../LewanSoulPlanner.h"
 class GetPIDData: public PacketEventAbstract {
 private:
-	LewanSoulPlanner * planner;
+	LewanSoulPlanner * planner;LewanSoulPlanner * planner2;
 	int numPID;
 public:
-	GetPIDData(int num, LewanSoulPlanner * planner);
+	GetPIDData(int num, LewanSoulPlanner * planner, LewanSoulPlanner * list);
 	virtual ~GetPIDData();
 	void event(float * buffer);
 };

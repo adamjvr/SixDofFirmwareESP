@@ -12,7 +12,7 @@
 #define HOME_SWITCH_PIN 0
 #define INDICATOR 13
 #define MOTOR_DISABLE 12
-#define plannerLoopTimeMs 50
+#define plannerLoopTimeMs 30
 enum LewanSoulState_t {
 	StartupSerial, WaitForHomePress,WaitForHomeRelease,WaitingForCalibrationToFinish,WaitingToRun,running,disabled
 // Add more states here and be sure to add them to the cycle
@@ -20,19 +20,22 @@ enum LewanSoulState_t {
 class LewanSoulPlanner {
 	LX16ABus servoBus;
 	LX16AServo ** motors;
-	int num=0;
+	int numberOfServos=0;
 	LewanSoulState_t state=StartupSerial;
 	long timeOfLastRun = 0;
 	long timeOfHomingPressed=0;
 	bool blinkState = false;
 	long timeOfLastBlink = 0;
+	void update(int startIndex,int endIndex);
+	void read(int startIndex,int endIndex);
+	bool calibrate(int startIndex,int endIndex);
+	int channel=0;
 public:
-	LewanSoulPlanner( int num);
+	LewanSoulPlanner( int num, int channel);
 	~LewanSoulPlanner();
 	void loop();
-	void update();
-	void read();
-	bool calibrate();
+	int indexSplit=3;
+
 	int targets[10]={0,};
 	int positions[10]={0,};
 };
