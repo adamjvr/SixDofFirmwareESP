@@ -49,7 +49,7 @@ bool LewanSoulPlanner::calibrate(){
 	for(int i=0;i<num;i++){
 		//upstream[i]->startInterpolationDegrees(startingAngles[i],2000,SIN);
 		//motors[i]->move_time_and_wait_for_sync(startingAngles[i], 2000);
-		targets[i]=motors[i]->pos_read();
+		targets[i]=positions[i];
 	}
 	//servoBus.move_sync_start();
 	return true;
@@ -71,7 +71,8 @@ void LewanSoulPlanner::update(){
 			Serial.println("Capping upper setpoint "+String(target)+" to "+String(motors[i]->getMaxCentDegrees()));
 			target=motors[i]->getMaxCentDegrees();
 			targets[i]=target;
-			targets[i]=target;		}
+			targets[i]=target;
+		}
 		if(target<motors[i]->getMinCentDegrees()){
 			Serial.println("Capping lower setpoint "+String(target)+" to "+String(motors[i]->getMinCentDegrees()));
 			target=motors[i]->getMinCentDegrees();
@@ -170,6 +171,13 @@ void LewanSoulPlanner::loop(){
 		break;
 	case disabled:
 		read();
+		Serial.print("\n[ ");
+		for(int i=0;i<num;i++){
+			Serial.print(String(positions[i]));
+			if(i!=num-1)
+				Serial.print(" , ");
+		}
+		Serial.print(" ] ");
 		if(digitalRead(MOTOR_DISABLE)){
 			state=running;
 			Serial.println("\r\nEnable Motors");
