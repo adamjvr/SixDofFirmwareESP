@@ -165,7 +165,7 @@ void LewanSoulPlanner::loop(){
 			timeOfLastRun=millis();
 			//Serial.print("`");
 		}else if(millis()-timeOfLastRun>plannerLoopTimeMs){
-			Serial.println("\t\tERROR Real time loop broken, took: "+String((millis()-timeOfLastRun)));
+			//Serial.println("\t\tERROR Real time loop broken, took: "+String((millis()-timeOfLastRun)));
 			state=running;
 			timeOfLastRun=millis();
 		}else
