@@ -8,9 +8,9 @@
 #include "LewanSoulPlanner.h"
 
 //#include <FlashStorage.h>
-int32_t startingAngles []= {-8999, 4440, 4731, 8962, -1329, 9024,0};
-int32_t upperAngles []= {9000, 9000, 9000, 11000, 15500, 11000, 11000};
-int32_t lowerAngles []= {-9000, -9000, -9000, -11000, -5000, -11000, -11000};
+int32_t startingAngles []= {-	8999, 	4440, 	4731, 9000, -1329, 		9024,	0};
+int32_t upperAngles []= {		9000, 	9000, 	9000, 9000, 15500, 	11000, 	11000};
+int32_t lowerAngles []= {		-9000, -9000,  -9000, -13000, -5000, 	-11000, -11000};
 
 //FlashStorage(cal1, float);
 //FlashStorage(cal2, float);
