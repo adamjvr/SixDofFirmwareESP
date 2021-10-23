@@ -134,12 +134,12 @@ void LewanSoulPlanner::loop(){
 			state=WaitForHomePress;
 		}else{
 			state=running;
+			read( startIndex, endIndex);
 			for(int i=startIndex;i<endIndex;i++){
-
+				targets[i]=positions[i];
 				motors[i]->setLimitsTicks(	(lowerAngles[i]-motors[i]->staticOffset)/24,
 											(upperAngles[i]-motors[i]->staticOffset)/24
 											);
-				//motors[i]->readLimits();
 			}
 			digitalWrite(INDICATOR, 1);
 		}
