@@ -98,7 +98,7 @@ void LewanSoulPlanner::loop(){
 		servoBus.retry = 0; // enforce synchronous real time
 
 
-		Serial.println("\r\nBeginning Trajectory Planner");
+		Serial.println("\r\nBeginning Trajectory Planner "+String(channel));
 		pinMode(HOME_SWITCH_PIN, INPUT_PULLUP);
 		pinMode(MOTOR_DISABLE, INPUT_PULLUP);
 		for(int i=startIndex;i<endIndex;i++)
@@ -110,11 +110,12 @@ void LewanSoulPlanner::loop(){
 		if(preferencesInUse)
 			break;
 		preferencesInUse=true;
+		delay(1);
 		state=readPreferrences;
 		// no break
 	case readPreferrences:
 		preferences.begin("Lewan", true);
-		for(int i=startIndex;i<=endIndex;i++){
+		for(int i=startIndex;i<endIndex;i++){
 			uint8_t key = preferences.getUChar(("key"+String(i)).c_str(), 0);
 			if(key==FLASHKEY){
 				Serial.println("Accessing Stored values for "+String(i));
@@ -122,7 +123,7 @@ void LewanSoulPlanner::loop(){
 				motors[i]->minCentDegrees= preferences.getInt(("min"+String(i)).c_str(), 0);
 				motors[i]->maxCentDegrees= preferences.getInt(("max"+String(i)).c_str(), 0);
 			}else{
-				Serial.println("No stored values for "+String(i));
+				Serial.println("Ch:"+String(channel)+" No stored values for "+String(i));
 				clibarationRequired=true;
 			}
 		}
@@ -193,12 +194,13 @@ void LewanSoulPlanner::loop(){
 		if(preferencesInUse)
 			break;
 		preferencesInUse=true;
+		delay(1);
 		state= writePreferences;
 		//no break
 	case writePreferences:
 		preferences.begin("Lewan", false);
-		Serial.println("Storing preferences in FLASH");
-		for(int i=startIndex;i<=endIndex;i++){
+		Serial.println("CH:"+String(channel)+"Storing preferences in FLASH");
+		for(int i=startIndex;i<endIndex;i++){
 		   preferences.putUChar(("key"+String(i)).c_str(), FLASHKEY);
 		   preferences.putInt(("off"+String(i)).c_str(),motors[i]->staticOffset);
 		   preferences.putInt(("min"+String(i)).c_str(),motors[i]->minCentDegrees);

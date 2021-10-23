@@ -14,12 +14,13 @@ static LewanSoulPlanner * planner1=NULL;
 static LewanSoulPlanner * planner2=NULL;
 static String name ="GroguArm";
 static TaskHandle_t complexHandlerTaskUS;
+
 void MotorThread0(void * param){
 	Serial.println("Starting the Motor loop thread");
 
 	while (1) {
 		vTaskDelay(1); //sleep 10ms
-		if(planner2!=NULL)
+		if(planner2!=NULL&&manager.getState() == Connected)
 			planner2->loop();
 	}
 	Serial.println("ERROR Motor thread died!");
@@ -29,7 +30,7 @@ void MotorThread1(void * param){
 
 	while (1) {
 		vTaskDelay(1); //sleep 10ms
-		if(planner1!=NULL)
+		if(planner1!=NULL &&manager.getState() == Connected)
 			planner1->loop();
 	}
 	Serial.println("ERROR Motor thread died!");
