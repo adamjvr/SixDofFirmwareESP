@@ -11,6 +11,7 @@
 int32_t startingAngles []= {-	8999, 	4440, 	4731, 9000, -1329, 		9024,	0};
 int32_t upperAngles []= {		9000, 	9000, 	9000, 9000, 15500, 	11000, 	11000};
 int32_t lowerAngles []= {		-9000, -9000,  -9000, -13000, -5000, 	-11000, -11000};
+static bool preferencesInUse=false;
 
 //FlashStorage(cal1, float);
 //FlashStorage(cal2, float);
@@ -86,7 +87,7 @@ void LewanSoulPlanner::update(int startIndex,int endIndex){
 void LewanSoulPlanner::loop(){
 	int startIndex=channel==0?0:indexSplit;
 	int endIndex=channel==0?indexSplit:numberOfServos;
-
+	bool clibarationRequired=false;
 	switch(state){
 	case StartupSerial:
 		if(channel==0)
@@ -102,8 +103,37 @@ void LewanSoulPlanner::loop(){
 		pinMode(MOTOR_DISABLE, INPUT_PULLUP);
 		for(int i=startIndex;i<endIndex;i++)
 				motors[i]->disable();
-		state=WaitForHomePress;
+		state=waitingToreadPreferences;
 		pinMode(INDICATOR, OUTPUT);
+		break;
+	case waitingToreadPreferences:
+		if(preferencesInUse)
+			break;
+		preferencesInUse=true;
+		state=readPreferrences;
+		// no break
+	case readPreferrences:
+		preferences.begin("Lewan", true);
+		for(int i=startIndex;i<=endIndex;i++){
+			uint8_t key = preferences.getUChar(("key"+String(i)).c_str(), 0);
+			if(key==FLASHKEY){
+				Serial.println("Accessing Stored values for "+String(i));
+				motors[i]->staticOffset = preferences.getInt(("off"+String(i)).c_str(), 0);
+				motors[i]->minCentDegrees= preferences.getInt(("min"+String(i)).c_str(), 0);
+				motors[i]->maxCentDegrees= preferences.getInt(("max"+String(i)).c_str(), 0);
+			}else{
+				Serial.println("No stored values for "+String(i));
+				clibarationRequired=true;
+			}
+		}
+		preferences.end();
+		preferencesInUse=false;
+		if(clibarationRequired){
+			state=WaitForHomePress;
+		}else{
+			state=running;
+			digitalWrite(INDICATOR, 1);
+		}
 		break;
 	case WaitForHomePress:
 		read( startIndex, endIndex);
@@ -156,6 +186,26 @@ void LewanSoulPlanner::loop(){
 //		}
 		Serial.println("\r\nStarting the planner");
 		//servoBus.debug(true);
+		state=waitingtoWritePreferences;
+		digitalWrite(INDICATOR, 1);
+		break;
+	case waitingtoWritePreferences:
+		if(preferencesInUse)
+			break;
+		preferencesInUse=true;
+		state= writePreferences;
+		//no break
+	case writePreferences:
+		preferences.begin("Lewan", false);
+		Serial.println("Storing preferences in FLASH");
+		for(int i=startIndex;i<=endIndex;i++){
+		   preferences.putUChar(("key"+String(i)).c_str(), FLASHKEY);
+		   preferences.putInt(("off"+String(i)).c_str(),motors[i]->staticOffset);
+		   preferences.putInt(("min"+String(i)).c_str(),motors[i]->minCentDegrees);
+		   preferences.putInt(("max"+String(i)).c_str(),motors[i]->maxCentDegrees);
+		}
+		preferences.end();
+		preferencesInUse=false;
 		state=running;
 		digitalWrite(INDICATOR, 1);
 		break;

@@ -9,15 +9,18 @@
 #define SRC_PID_LEWANSOULPLANNER_H_
 
 #include <lx16a-servo.h>
+#include <Preferences.h>
 #define HOME_SWITCH_PIN 0
 #define INDICATOR 13
 #define MOTOR_DISABLE 12
 #define plannerLoopTimeMs 15
+#define FLASHKEY 37
 enum LewanSoulState_t {
-	StartupSerial, WaitForHomePress,WaitForHomeRelease,WaitingForCalibrationToFinish,WaitingToRun,running,disabled
+	StartupSerial, WaitForHomePress,WaitForHomeRelease,WaitingForCalibrationToFinish,WaitingToRun,running,disabled,waitingToreadPreferences,readPreferrences,waitingtoWritePreferences,writePreferences
 // Add more states here and be sure to add them to the cycle
 };
 class LewanSoulPlanner {
+	Preferences preferences;
 	LX16ABus servoBus;
 	LX16AServo ** motors;
 	int numberOfServos=0;
