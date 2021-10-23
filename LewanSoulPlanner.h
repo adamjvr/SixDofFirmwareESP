@@ -24,7 +24,6 @@ class LewanSoulPlanner {
 	LX16ABus servoBus;
 	LX16AServo ** motors;
 	int numberOfServos=0;
-	LewanSoulState_t state=StartupSerial;
 	long timeOfLastRun = 0;
 	long timeOfHomingPressed=0;
 	bool blinkState = false;
@@ -38,6 +37,7 @@ public:
 	~LewanSoulPlanner();
 	void loop();
 	int indexSplit=3;
+	LewanSoulState_t state=StartupSerial;
 
 	int targets[10]={0,};
 	int positions[10]={0,};

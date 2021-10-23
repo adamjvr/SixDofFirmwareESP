@@ -118,7 +118,7 @@ void LewanSoulPlanner::loop(){
 		for(int i=startIndex;i<endIndex;i++){
 			uint8_t key = preferences.getUChar(("key"+String(i)).c_str(), 0);
 			if(key==FLASHKEY){
-				Serial.println("Accessing Stored values for "+String(i));
+				Serial.println("Ch:"+String(channel)+"Accessing Stored values for "+String(i));
 				motors[i]->staticOffset = preferences.getInt(("off"+String(i)).c_str(), 0);
 				motors[i]->minCentDegrees= preferences.getInt(("min"+String(i)).c_str(), 0);
 				motors[i]->maxCentDegrees= preferences.getInt(("max"+String(i)).c_str(), 0);
@@ -208,6 +208,7 @@ void LewanSoulPlanner::loop(){
 		}
 		preferences.end();
 		preferencesInUse=false;
+		read(startIndex, endIndex);
 		state=running;
 		digitalWrite(INDICATOR, 1);
 		break;
