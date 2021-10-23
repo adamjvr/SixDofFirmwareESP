@@ -71,12 +71,12 @@ void LewanSoulPlanner::update(int startIndex,int endIndex){
 	for(int i=startIndex;i<endIndex;i++){
 		int32_t target = targets[i];
 		if(target>motors[i]->getMaxCentDegrees()){
-			Serial.println("Capping upper setpoint "+String(target)+" to "+String(motors[i]->getMaxCentDegrees()));
+			Serial.println("Index "+String(i)+" Capping upper setpoint "+String(target)+" to "+String(motors[i]->getMaxCentDegrees()));
 			target=motors[i]->getMaxCentDegrees();
 			targets[i]=target;
 		}
 		if(target<motors[i]->getMinCentDegrees()){
-			Serial.println("Capping lower setpoint "+String(target)+" to "+String(motors[i]->getMinCentDegrees()));
+			Serial.println("Index "+String(i)+" Capping lower setpoint "+String(target)+" to "+String(motors[i]->getMinCentDegrees()));
 			target=motors[i]->getMinCentDegrees();
 			targets[i]=target;
 		}
@@ -116,12 +116,13 @@ void LewanSoulPlanner::loop(){
 	case readPreferrences:
 		preferences.begin("Lewan", true);
 		for(int i=startIndex;i<endIndex;i++){
+			motors[i]->initialize();
 			uint8_t key = preferences.getUChar(("key"+String(i)).c_str(), 0);
 			if(key==FLASHKEY){
 				Serial.println("Ch:"+String(channel)+"Accessing Stored values for "+String(i));
-				motors[i]->staticOffset = preferences.getInt(("off"+String(i)).c_str(), 0);
-				motors[i]->minCentDegrees= preferences.getInt(("min"+String(i)).c_str(), 0);
-				motors[i]->maxCentDegrees= preferences.getInt(("max"+String(i)).c_str(), 0);
+				motors[i]->staticOffset = preferences.getInt(("off"+String(i)).c_str(), -1);
+				motors[i]->minCentDegrees= lowerAngles[i];//preferences.getInt(("min"+String(i)).c_str(), -1);
+				motors[i]->maxCentDegrees= upperAngles[i];//preferences.getInt(("max"+String(i)).c_str(),-1);
 			}else{
 				Serial.println("Ch:"+String(channel)+" No stored values for "+String(i));
 				clibarationRequired=true;
@@ -133,8 +134,39 @@ void LewanSoulPlanner::loop(){
 			state=WaitForHomePress;
 		}else{
 			state=running;
+			for(int i=startIndex;i<endIndex;i++){
+
+				motors[i]->setLimitsTicks(	(lowerAngles[i]-motors[i]->staticOffset)/24,
+											(upperAngles[i]-motors[i]->staticOffset)/24
+											);
+				//motors[i]->readLimits();
+			}
 			digitalWrite(INDICATOR, 1);
 		}
+		break;
+	case waitingtoWritePreferences:
+		if(preferencesInUse)
+			break;
+		preferencesInUse=true;
+		delay(1);
+		state= writePreferences;
+		//no break
+	case writePreferences:
+		preferences.begin("Lewan", false);
+		Serial.println("CH:"+String(channel)+" Storing preferences in FLASH...");
+		for(int i=startIndex;i<endIndex;i++){
+		   preferences.putUChar(("key"+String(i)).c_str(), FLASHKEY);
+		   preferences.putInt(("off"+String(i)).c_str(),motors[i]->staticOffset);
+//		   preferences.putInt(("min"+String(i)).c_str(),motors[i]->minCentDegrees);
+//		   preferences.putInt(("max"+String(i)).c_str(),motors[i]->maxCentDegrees);
+		}
+		preferences.end();
+		Serial.println("CH:"+String(channel)+" Done Storing preferences in FLASH");
+		preferencesInUse=false;
+
+		read(startIndex, endIndex);
+		state=running;
+		digitalWrite(INDICATOR, 1);
 		break;
 	case WaitForHomePress:
 		read( startIndex, endIndex);
@@ -190,28 +222,7 @@ void LewanSoulPlanner::loop(){
 		state=waitingtoWritePreferences;
 		digitalWrite(INDICATOR, 1);
 		break;
-	case waitingtoWritePreferences:
-		if(preferencesInUse)
-			break;
-		preferencesInUse=true;
-		delay(1);
-		state= writePreferences;
-		//no break
-	case writePreferences:
-		preferences.begin("Lewan", false);
-		Serial.println("CH:"+String(channel)+"Storing preferences in FLASH");
-		for(int i=startIndex;i<endIndex;i++){
-		   preferences.putUChar(("key"+String(i)).c_str(), FLASHKEY);
-		   preferences.putInt(("off"+String(i)).c_str(),motors[i]->staticOffset);
-		   preferences.putInt(("min"+String(i)).c_str(),motors[i]->minCentDegrees);
-		   preferences.putInt(("max"+String(i)).c_str(),motors[i]->maxCentDegrees);
-		}
-		preferences.end();
-		preferencesInUse=false;
-		read(startIndex, endIndex);
-		state=running;
-		digitalWrite(INDICATOR, 1);
-		break;
+
 	case WaitingToRun:
 		if(millis()-timeOfLastRun==plannerLoopTimeMs){
 			state=running;
