@@ -91,9 +91,9 @@ void LewanSoulPlanner::loop(){
 	switch(state){
 	case StartupSerial:
 		if(channel==0)
-			servoBus.beginOnePinMode(&Serial1,14); //
+			servoBus.beginOnePinMode(&Serial1,SERIAL_BUS0); //
 		else
-			servoBus.beginOnePinMode(&Serial2,27); //
+			servoBus.beginOnePinMode(&Serial2,SERIAL_BUS1); //
 		servoBus.debug(false);
 		servoBus.retry = 0; // enforce synchronous real time
 

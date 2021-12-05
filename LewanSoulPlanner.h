@@ -15,6 +15,8 @@
 #define MOTOR_DISABLE 12
 #define plannerLoopTimeMs 15
 #define FLASHKEY 37
+#define SERIAL_BUS0 14
+#define SERIAL_BUS1 27
 enum LewanSoulState_t {
 	StartupSerial, WaitForHomePress,WaitForHomeRelease,WaitingForCalibrationToFinish,WaitingToRun,running,disabled,waitingToreadPreferences,readPreferrences,waitingtoWritePreferences,writePreferences
 // Add more states here and be sure to add them to the cycle
