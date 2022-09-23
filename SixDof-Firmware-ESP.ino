@@ -52,9 +52,9 @@ void setup() {
 void loop() {
 	// read the serial port for new passwords and maintain connections
 	manager.loop();
-	if (manager.getState() == Connected) {
+	//if (manager.getState() == Connected) {
 		if(planner1->state == running ||planner1->state==WaitingToRun||planner1->state==disabled)
 			if(planner2->state == running ||planner2->state==WaitingToRun||planner2->state==disabled)
 				coms.server();
-	}
+	//}
 }
