@@ -4,6 +4,4 @@
 
  [Instructions to Open Projects in Eclipse](https://github.com/WPIRoboticsEngineering/RobotInterfaceBoard/blob/master/UseEclipse.md)
  
- use this toolchain:
-
-<img src="toolchainConf.png" width="600">
+ Use esp32 1.0x toolchain
