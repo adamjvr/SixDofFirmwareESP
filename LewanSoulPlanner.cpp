@@ -27,6 +27,8 @@ LewanSoulPlanner::LewanSoulPlanner(int n,int channel) {
 	motors=new LX16AServo*[numberOfServos];
 	for(int i=startIndex;i<endIndex;i++)
 		motors[i]= new LX16AServo(&servoBus, i+1);
+	servoBus.debug(true);
+
 }
 
 LewanSoulPlanner::~LewanSoulPlanner() {

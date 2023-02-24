@@ -12,7 +12,7 @@ static WifiManager manager;
 static UDPSimplePacket coms;
 static LewanSoulPlanner * planner1=NULL;
 static LewanSoulPlanner * planner2=NULL;
-static String name ="GroguArm";
+static String name ="AdamArmESP";
 static TaskHandle_t complexHandlerTaskUS;
 
 void MotorThread0(void * param){
@@ -37,11 +37,11 @@ void MotorThread1(void * param){
 }
 
 void setup() {
-	planner1 =  new LewanSoulPlanner(7,0);
-	planner2 =  new LewanSoulPlanner(7,1);
+	planner1 =  new LewanSoulPlanner(6,0);
+	planner2 =  new LewanSoulPlanner(6,1);
 	manager.setup();
-	coms.attach(new SetPIDSetpoint(7,planner1,planner2));
-	coms.attach(new GetPIDData(7,planner1,planner2));
+	coms.attach(new SetPIDSetpoint(6,planner1,planner2));
+	coms.attach(new GetPIDData(6,planner1,planner2));
 	coms.attach(new NameCheckerServer(&name));
 	xTaskCreatePinnedToCore(MotorThread0, "Motor Thread 0", 8192, NULL, 1, // low priority timout thread
 					&complexHandlerTaskUS, 1);
