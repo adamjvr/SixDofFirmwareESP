@@ -97,7 +97,7 @@ void LewanSoulPlanner::loop(){
 			servoBus.beginOnePinMode(&Serial1,SERIAL_BUS0); //
 		else
 			servoBus.beginOnePinMode(&Serial2,SERIAL_BUS1); //
-		servoBus.debug(false);
+		//servoBus.debug(false);
 		servoBus.retry = 0; // enforce synchronous real time
 
 
@@ -227,22 +227,17 @@ void LewanSoulPlanner::loop(){
 		break;
 
 	case WaitingToRun:
-		if(millis()-timeOfLastRun==plannerLoopTimeMs){
+		if(millis()-timeOfLastRun>plannerLoopTimeMs){
 			state=running;
-			timeOfLastRun=millis();
-			//Serial.print("`");
-		}else if(millis()-timeOfLastRun>plannerLoopTimeMs){
-			//Serial.println("\t\tERROR Real time loop broken, took: "+String((millis()-timeOfLastRun)));
-			state=running;
-			timeOfLastRun=millis();
 		}else
 			break;
 		//no break
 	case running:
-		servoBus.debug(false);
+		//servoBus.debug(false);
 		if(digitalRead(MOTOR_DISABLE)){
 			update( startIndex, endIndex);
 			state=WaitingToRun;
+			timeOfLastRun=millis();
 		}else{
 			for(int i=startIndex;i<endIndex;i++)
 				motors[i]->disable();

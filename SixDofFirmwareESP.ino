@@ -57,4 +57,7 @@ void loop() {
 			if(planner2->state == running ||planner2->state==WaitingToRun||planner2->state==disabled)
 				coms.server();
 	//}
+	for(int i=0;i<6;i++){
+
+	}
 }

@@ -13,7 +13,7 @@
 #define HOME_SWITCH_PIN 0
 #define INDICATOR 13
 #define MOTOR_DISABLE 12
-#define plannerLoopTimeMs 15
+#define plannerLoopTimeMs 30
 #define FLASHKEY 37
 #define SERIAL_BUS0 14
 #define SERIAL_BUS1 27
